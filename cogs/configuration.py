@@ -86,7 +86,7 @@ class Configuration(commands.Cog):
         roles_to_add = [role for role in roles_to_add if role in ctx.guild.roles]
 
         roles = self.bot.get_data(ctx.guild.id, 'ticket_roles_ids', [])
-        roles.extend((r.id for i in roles_to_add))
+        roles.extend((r.id for r in roles_to_add))
 
         self.bot.set_data(ctx.guild.id, 'ticket_roles_ids', roles)
         await ctx.send("Roles \"{}\" can now open a ticket".format(' '.join(role.mention for role in roles_to_add)))
