@@ -11,7 +11,8 @@ class AnonymousTicket(commands.Bot):
         self.data = json.load(open('data.json'))
         self.ticket_channels = bidict.bidict()
         self.all_cogs = [
-            'cogs.ticket'
+            'cogs.ticket',
+            'cogs.configuration'
         ]
         for extension in self.all_cogs:
             self.load_extension(extension)
@@ -29,16 +30,6 @@ class AnonymousTicket(commands.Bot):
         except KeyError:
             self.set_data(gid, name, default)
             return self.data[str(gid)][name]
-
-    async def on_message(self, message: discord.Message):
-        if message.author.bot:
-            return
-        if message.channel in self.ticket_channels:
-            await self.ticket_channels[message.channel].send(content=message.content)
-        elif message.channel in self.ticket_channels.inv:
-            await self.ticket_channels.inv[message.channel].send(content=message.author.mention + ': ' + message.content)
-
-        await self.process_commands(message)
 
     async def on_ready(self):
         pass
