@@ -1,6 +1,5 @@
 import discord
 import json
-import bidict
 from discord.ext import commands
 
 
@@ -9,7 +8,6 @@ class AnonymousTicket(commands.Bot):
     def __init__(self, **options):
         super().__init__('!', **options)
         self.data = json.load(open('data.json'))
-        self.ticket_channels = bidict.bidict()
         self.all_cogs = [
             'cogs.ticket',
             'cogs.configuration'
