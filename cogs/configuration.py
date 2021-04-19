@@ -82,15 +82,14 @@ class Configuration(commands.Cog):
 
     @commands.command('config.add.ticket-roles')
     @commands.guild_only()
-    async def add_ticket_roles(self, ctx, roles: commands.Greedy[discord.Role]):
-        roles = [role for role in roles if role in ctx.guild.roles]
+    async def add_ticket_roles(self, ctx, roles_to_add: commands.Greedy[discord.Role]):
+        roles_to_add = [role for role in roles_to_add if role in ctx.guild.roles]
 
         roles = self.bot.get_data(ctx.guild.id, 'ticket_roles_ids', [])
-        roles.extend(roles)
-        roles_ids = list(set(role.id for role in roles))
+        roles.extend((r.id for i in roles_to_add))
 
-        self.bot.set_data(ctx.guild.id, 'ticket_roles_ids', roles_ids)
-        await ctx.send("Roles \"{}\" can now open a ticket".format(' '.join(role.mention for role in roles)))
+        self.bot.set_data(ctx.guild.id, 'ticket_roles_ids', roles)
+        await ctx.send("Roles \"{}\" can now open a ticket".format(' '.join(role.mention for role in roles_to_add)))
 
 
 def setup(bot):
