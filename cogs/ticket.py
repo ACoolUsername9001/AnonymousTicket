@@ -131,6 +131,20 @@ class Ticket(commands.Cog):
             for member in members:
                 await ticket_channel.set_permissions(member, overwrite=include_permission)
 
+    @commands.command('ticket.view')
+    async def ticket_view(self, ctx):
+        if not is_ticket_open(ctx, self.ticket_channels):
+            await ctx.send("there is no open ticket linked to this channel")
+            return
+
+        if isinstance(ctx.channel, discord.DMChannel):
+            ticket_channel = self.ticket_channels[ctx.channel]
+        else:
+            ticket_channel = ctx.channel
+        embed = discord.Embed(title=ticket_channel.name)
+        embed.add_field(name='Permitted Users', value='\n'.join([m.mention for m in ticket_channel.members]))
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Ticket(bot))
