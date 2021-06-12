@@ -1,5 +1,5 @@
-import discord
 import bidict
+import discord
 
 from discord.ext import commands
 from time import time
@@ -12,13 +12,13 @@ def dms_only():
 
 
 def is_ticket_open(ctx: commands.Context, ticket_channels):
-    return ctx.channel in ticket_channels or ctx.channel in ticket_channels.inv
+    return ctx.channel in ticket_channels or ctx.channel in ticket_channels.inverse
 
 
 class Ticket(commands.Cog):
 
     def __init__(self, bot):
-        self.ticket_channels = bidict.bidict()
+        self.ticket_channels: bidict.BidictBase[discord.abc.Messageable, discord.abc.Messageable] = bidict.bidict()
         self.bot = bot
 
     # def log_channel(self, channel: discord.TextChannel):
@@ -29,9 +29,20 @@ class Ticket(commands.Cog):
         if message.author.bot:
             return
         if message.channel in self.ticket_channels:
-            await self.ticket_channels[message.channel].send(content=message.content)
-        elif message.channel in self.ticket_channels.inv:
-            await self.ticket_channels.inv[message.channel].send(content=message.author.mention + ': ' + message.content)
+
+            try:
+                await self.ticket_channels[message.channel].send(content=message.content)
+                if message.attachments:
+                    await self.ticket_channels[message.channel].send('\n'.join([a.url for a in message.attachments]))
+            except Exception as e:
+                await message.channel.send("Could not send message, reason: {}".format(e))
+
+        elif message.channel in self.ticket_channels.inverse:
+            try:
+                await self.ticket_channels.inverse[message.channel].send(content=message.author.mention + ': ' + message.content)
+                await self.ticket_channels.inverse[message.channel].send('\n'.join([a.url for a in message.attachments]))
+            except Exception as e:
+                await message.channel.send("Could not send message, reason: {}".format(e))
 
     @commands.command('ticket.open')
     async def ticket_open(self, ctx, *args):
@@ -81,10 +92,10 @@ class Ticket(commands.Cog):
                 await ctx.channel.send("Ticket closed, I will no longer pass your messages to the server")
                 # await guild_channel.delete()
         else:
-            if ctx.channel not in self.ticket_channels.inv:
+            if ctx.channel not in self.ticket_channels.inverse:
                 return
             # self.log_channel(ctx.channel)
-            dm_channel = self.ticket_channels.inv.pop(ctx.channel)
+            dm_channel = self.ticket_channels.inverse.pop(ctx.channel)
             await dm_channel.send("Ticket closed, I will no longer pass your messages to the server")
             # await ctx.channel.delete()
 
