@@ -9,7 +9,7 @@ class Configuration(commands.Cog):
         self.bot = bot
 
     def cog_check(self, ctx):
-        return ctx.author.guild_permissions.administrator or (self.bot.get_data(ctx.guild.id, 'configurator_role', 0) in ctx.author.roles)
+        return (not isinstance(ctx.channel, discord.DMChannel)) and (ctx.author.guild_permissions.administrator or (self.bot.get_data(ctx.guild.id, 'configurator_role', 0) in ctx.author.roles))
 
     @commands.guild_only()
     @commands.command('config.category.set')
