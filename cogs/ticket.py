@@ -40,7 +40,8 @@ class Ticket(commands.Cog):
         elif message.channel in self.ticket_channels.inverse:
             try:
                 await self.ticket_channels.inverse[message.channel].send(content=message.author.mention + ': ' + message.content)
-                await self.ticket_channels.inverse[message.channel].send('\n'.join([a.url for a in message.attachments]))
+                if message.attachments:
+                    await self.ticket_channels.inverse[message.channel].send('\n'.join([a.url for a in message.attachments]))
             except Exception as e:
                 await message.channel.send("Could not send message, reason: {}".format(e))
 
@@ -69,11 +70,10 @@ class Ticket(commands.Cog):
             await ctx.author.send("you do not have permissions to open a ticket in this guild")
             return
 
-        category = discord.utils.get(guild.categories, id=self.bot.get_data(guild.id, 'ticket_category', 0))
+        category: discord.CategoryChannel = discord.utils.get(guild.categories, id=self.bot.get_data(guild.id, 'ticket_category', 0))
         if not category:
             await ctx.author.send('This guild has not set up the ticket system yet')
             return
-
         ticket_channel = await category.create_text_channel('ticket-{}'.format(time()))
         self.ticket_channels[ctx.channel] = ticket_channel
         await ctx.send("The ticket is now open, talk to me and I'll pass it on")
